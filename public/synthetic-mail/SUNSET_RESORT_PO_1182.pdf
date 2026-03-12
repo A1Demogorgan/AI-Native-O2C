@@ -1,0 +1,47 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 566 >>
+stream
+BT
+/F1 11 Tf
+14 TL
+50 760 Td
+(MattressCo Hospitality Order Form) Tj
+T* (Customer: Sunset Resort Las Vegas) Tj
+T* (Customer Email: opsbuying@sunsetresortcollection.com) Tj
+T* (PO Number: SRL-PO-1182) Tj
+T* (Requested Delivery Date: 2026-03-28) Tj
+T* (Ship To: Sunset Resort Tower C Warehouse, 90 Paradise Rd, Las Vegas NV) Tj
+T* (Currency: USD) Tj
+T* (Item: HTL-CAL-KING-PREMIUM-X qty 54 unit_price 369.00) Tj
+T* (Item: HTL-QUEEN-PREMIUM-X qty 42 unit_price 319.00) Tj
+T* (Total Amount: 33276.00) Tj
+T* (Special Notes: Segmented by floor groups 20-24 and 25-29) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+928
+%%EOF

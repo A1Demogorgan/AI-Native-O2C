@@ -3,15 +3,26 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "init-db": "node scripts/init-db.mjs",
+    "reset-db": "node scripts/reset-db.mjs",
+    "seed-data": "node scripts/seed-data.mjs",
+    "gen-synthetic-mail": "node lib/order-capture-fixtures/generateSyntheticPdfs.mjs",
+    "gen-edi-x12-orders": "node scripts/generate-edi-x12-orders.mjs"
   },
   "dependencies": {
+    "@faker-js/faker": "^9.9.0",
+    "@openai/agents": "^0.1.12",
+    "@openai/agents-openai": "^0.1.12",
+    "duckdb": "^1.4.2",
     "next": "16.1.6",
+    "openai": "^5.23.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

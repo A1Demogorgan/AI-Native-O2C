@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Agentic O2C POC
 
-## Getting Started
+Local-first Order-to-Cash proof of concept built with Next.js, DuckDB, and OpenAI Agents SDK.
 
-First, run the development server:
+## Features
+
+- Cash Application agent: allocate payments to open invoices.
+- Dispute Triage agent: classify disputes and generate evidence summary.
+- Collections Strategy agent: generate prioritized outreach actions.
+- Order Capture agent: mailbox-driven email + PDF order capture with human-in-the-loop validation before posting.
+- O2C Control Tower dashboard: KPI visibility (DSO proxy, dispute rate, auto match rate, unapplied cash).
+
+## Tech
+
+- Next.js 16 (App Router + TypeScript)
+- DuckDB embedded database (`data/o2c.duckdb`)
+- `openai`, `@openai/agents`, `@openai/agents-openai`
+- `zod` validation
+- `@faker-js/faker` synthetic data seeding
+
+## Setup
 
 ```bash
+npm install
+npm run reset-db
+npm run init-db
+npm run seed-data
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API Endpoints
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `GET /api/customers`
+- `GET /api/invoices`
+- `GET /api/payments`
+- `GET /api/disputes`
+- `POST /api/payments/import`
+- `POST /api/disputes`
+- `GET /api/kpis`
+- `GET /api/collections`
+- `POST /api/collections/actions`
+- `POST /api/agents/cash-application`
+- `POST /api/agents/dispute-triage`
+- `POST /api/agents/collections-strategy`
+- `POST /api/agents/order-capture/email`
+- `POST /api/agents/order-capture/chat`
+- `POST /api/agents/order-capture/extract`
+- `GET /api/order-capture/mailboxes`
+- `POST /api/order-capture/pull-latest`
+- `POST /api/order-capture/approve`
+- `GET /api/orders`
+- `GET /api/agents/kpis`
 
-## Learn More
+## Notes
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Agent routes include deterministic fallback logic so they work without `OPENAI_API_KEY`.
+- If `OPENAI_API_KEY` is set, the app attempts to run through OpenAI Agents SDK.
+- All write actions generate event log entries.
