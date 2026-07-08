@@ -33,6 +33,7 @@ jobs:
       - name: Prepare standalone deployment artifact
         run: |
           rm -rf deploy
+          rm -f deploy.zip
           mkdir -p deploy
           cp -R .next/standalone/. deploy/
           mkdir -p deploy/.next
@@ -40,12 +41,13 @@ jobs:
           if [ -d public ]; then cp -R public deploy/public; fi
           if [ -d data ]; then cp -R data deploy/data; fi
           printf "[config]\nSCM_DO_BUILD_DURING_DEPLOYMENT=false\n" > deploy/.deployment
+          (cd deploy && zip -r ../deploy.zip .)
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: deploy
+          path: deploy.zip
           include-hidden-files: true
 
   deploy:
@@ -60,7 +62,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-          path: deploy
+          path: .
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -90,7 +92,7 @@ jobs:
           app-name: 'O2C'
           resource-group-name: ${{ steps.azure-config.outputs.resource_group }}
           slot-name: 'Production'
-          package: deploy
+          package: deploy.zip
           type: zip
           clean: true
           restart: true
