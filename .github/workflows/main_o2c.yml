@@ -85,15 +85,30 @@ jobs:
             --resource-group "$resource_group" \
             --settings SCM_DO_BUILD_DURING_DEPLOYMENT=false ENABLE_ORYX_BUILD=false
 
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'O2C'
-          resource-group-name: ${{ steps.azure-config.outputs.resource_group }}
-          slot-name: 'Production'
-          package: deploy.zip
-          type: zip
-          clean: true
-          restart: true
-          startup-command: 'node server.js'
+      - name: Configure Azure Web App startup
+        run: |
+          az webapp config set \
+            --name O2C \
+            --resource-group "${{ steps.azure-config.outputs.resource_group }}" \
+            --startup-file "node server.js"
+
+      - name: Deploy to Azure Web App
+        timeout-minutes: 20
+        run: |
+          az webapp start \
+            --name O2C \
+            --resource-group "${{ steps.azure-config.outputs.resource_group }}"
+          az webapp deploy \
+            --name O2C \
+            --resource-group "${{ steps.azure-config.outputs.resource_group }}" \
+            --src-path deploy.zip \
+            --type zip \
+            --restart true \
+            --timeout 1200
+
+      - name: Ensure Azure Web App is running
+        if: always()
+        run: |
+          az webapp start \
+            --name O2C \
+            --resource-group "${{ steps.azure-config.outputs.resource_group }}"
