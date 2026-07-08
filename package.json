@@ -15,8 +15,6 @@
   },
   "dependencies": {
     "@faker-js/faker": "^9.9.0",
-    "@openai/agents": "^0.1.12",
-    "@openai/agents-openai": "^0.1.12",
     "duckdb": "^1.4.2",
     "next": "16.1.6",
     "openai": "^5.23.0",

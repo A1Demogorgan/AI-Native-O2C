@@ -7,6 +7,24 @@ function getErrorMessage(err: unknown) {
   return String(err);
 }
 
+function getTextFromResponse(result: unknown) {
+  if (typeof result !== "object" || result === null) {
+    return "";
+  }
+
+  const response = result as {
+    output_text?: string;
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+
+  if (typeof response.output_text === "string") {
+    return response.output_text;
+  }
+
+  const content = response.choices?.[0]?.message?.content;
+  return typeof content === "string" ? content : "";
+}
+
 export async function runWithAgentSdk(systemPrompt: string, input: string): Promise<string | null> {
   const hasAzure =
     Boolean(process.env.AZURE_OPENAI_API_KEY) &&
@@ -20,13 +38,6 @@ export async function runWithAgentSdk(systemPrompt: string, input: string): Prom
   }
 
   try {
-    type AgentModule = {
-      Agent?: new (config: { name: string; instructions: string; model: unknown }) => unknown;
-      run?: (agent: unknown, inputText: string) => Promise<{ finalOutput?: string; outputText?: string }>;
-    };
-    type AgentsOpenAIModule = {
-      OpenAIResponsesModel?: new (client: unknown, model: string) => unknown;
-    };
     type OpenAISdkModule = {
       default?: new (config: { apiKey: string }) => unknown;
       AzureOpenAI?: new (config: {
@@ -36,21 +47,27 @@ export async function runWithAgentSdk(systemPrompt: string, input: string): Prom
         deployment: string;
       }) => unknown;
     };
+    type OpenAIClient = {
+      responses?: {
+        create: (params: {
+          model: string;
+          instructions: string;
+          input: string;
+        }) => Promise<unknown>;
+      };
+      chat?: {
+        completions?: {
+          create: (params: {
+            model: string;
+            messages: Array<{ role: "system" | "user"; content: string }>;
+          }) => Promise<unknown>;
+        };
+      };
+    };
 
-    const agents = (await import("@openai/agents")) as AgentModule;
-    const agentsOpenAI = (await import("@openai/agents-openai")) as AgentsOpenAIModule;
     const openaiSdk = (await import("openai")) as OpenAISdkModule;
 
-    const AgentCtor = agents.Agent;
-    const run = agents.run;
-    const OpenAIResponsesModel = agentsOpenAI.OpenAIResponsesModel;
-
-    if (!AgentCtor || !run || !OpenAIResponsesModel) {
-      lastAgentSdkError = "OpenAI Agents SDK modules could not be initialized.";
-      return null;
-    }
-
-    let client: unknown;
+    let client: OpenAIClient;
     let modelName: string;
 
     if (hasAzure) {
@@ -65,7 +82,7 @@ export async function runWithAgentSdk(systemPrompt: string, input: string): Prom
         apiVersion: process.env.AZURE_OPENAI_API_VERSION ?? "2025-03-01-preview",
         endpoint: process.env.AZURE_OPENAI_ENDPOINT!,
         deployment: process.env.AZURE_OPENAI_DEPLOYMENT!,
-      });
+      }) as OpenAIClient;
       modelName = process.env.AZURE_OPENAI_DEPLOYMENT!;
     } else {
       const OpenAI = openaiSdk.default;
@@ -76,21 +93,36 @@ export async function runWithAgentSdk(systemPrompt: string, input: string): Prom
 
       client = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY!,
-      });
+      }) as OpenAIClient;
       modelName = process.env.OPENAI_MODEL ?? "gpt-4.1-mini";
     }
 
-    const model = new OpenAIResponsesModel(client, modelName);
+    if (client.responses?.create) {
+      const result = await client.responses.create({
+        model: modelName,
+        instructions: systemPrompt,
+        input,
+      });
+      const text = getTextFromResponse(result);
+      lastAgentSdkError = text ? null : "OpenAI response did not include text output.";
+      return text || null;
+    }
 
-    const agent = new AgentCtor({
-      name: "O2C Agent",
-      instructions: systemPrompt,
-      model,
-    });
+    if (client.chat?.completions?.create) {
+      const result = await client.chat.completions.create({
+        model: modelName,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: input },
+        ],
+      });
+      const text = getTextFromResponse(result);
+      lastAgentSdkError = text ? null : "OpenAI chat completion did not include text output.";
+      return text || null;
+    }
 
-    const result = await run(agent, input);
-    lastAgentSdkError = null;
-    return String(result?.finalOutput ?? result?.outputText ?? "");
+    lastAgentSdkError = "OpenAI SDK client could not be initialized.";
+    return null;
   } catch (err) {
     lastAgentSdkError = getErrorMessage(err);
     return null;
