@@ -694,9 +694,9 @@ tr:last-child td {
 
 .consultant-fab-red,
 .consultant-teaser-red {
-  background: #fff2f4;
-  color: #8f1530;
-  border-color: #efb7c2;
+  background: #eef6ff;
+  color: var(--accent);
+  border-color: var(--accent-line);
 }
 
 .consultant-fab-amber,
@@ -831,9 +831,9 @@ tr:last-child td {
 }
 
 .consultant-error {
-  border: 1px solid #efb1b9;
-  background: #fff4f6;
-  color: #9c1d37;
+  border: 1px solid #f1a7af;
+  background: #fff7f8;
+  color: #a21f35;
   border-radius: 12px;
   padding: 8px 10px;
   font-size: 13px;
