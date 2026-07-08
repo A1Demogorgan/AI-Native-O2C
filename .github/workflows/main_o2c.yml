@@ -22,16 +22,29 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build Next.js app
+        run: npm run build
+
+      - name: Prepare standalone deployment artifact
+        run: |
+          rm -rf deploy
+          mkdir -p deploy
+          cp -R .next/standalone/. deploy/
+          mkdir -p deploy/.next
+          cp -R .next/static deploy/.next/static
+          if [ -d public ]; then cp -R public deploy/public; fi
+          if [ -d data ]; then cp -R data deploy/data; fi
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: |
-            .
-            !.git/**
-            !node_modules/**
-            !.next/**
+          path: deploy
           include-hidden-files: true
 
   deploy:
@@ -46,6 +59,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
+          path: deploy
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -54,10 +68,23 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B0F139BAC6844F4289198D07F5790611 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_552A1A7DFDD24128ADB126E428D2668B }}
 
+      - name: Disable Azure remote build
+        run: |
+          resource_group="$(az webapp list --query "[?name=='O2C'].resourceGroup | [0]" -o tsv)"
+          if [ -z "$resource_group" ]; then
+            echo "Could not find resource group for App Service O2C" >&2
+            exit 1
+          fi
+          az webapp config appsettings set \
+            --name O2C \
+            --resource-group "$resource_group" \
+            --settings SCM_DO_BUILD_DURING_DEPLOYMENT=false
+
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'O2C'
           slot-name: 'Production'
-          package: .
+          package: deploy
+          startup-command: 'node server.js'
