@@ -9,7 +9,6 @@ import O2CConsultant from "@/components/o2c-consultant";
 const nav = [
   { href: "/", label: "Dashboard" },
   { href: "/catalog", label: "Catalog" },
-  { href: "/order-capture-edi", label: "Order Capture - EDI" },
   { href: "/agents", label: "Agents" },
 ];
 
@@ -59,9 +58,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {!isEmbedded && (
         <header className="app-header">
           <Link href="/" className="brand-mark">
-            <span className="brand-logo-text">SBB</span>
-            <span>
-              <strong>SBB Bedding</strong>
+            <span className="brand-logo-text" aria-label="Serta Simmons Bedding">
+              <span>Serta</span>
+              <span>Simmons</span>
+              <span className="brand-light">Bedding</span>
+            </span>
+            <span className="brand-copy">
               <span className="brand-sub">Agentic O2C Platform</span>
             </span>
           </Link>
