@@ -27,7 +27,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: |
+            .
+            !.git/**
+            !node_modules/**
+            !.next/**
+          include-hidden-files: true
 
   deploy:
     runs-on: ubuntu-latest
@@ -56,4 +61,3 @@ jobs:
           app-name: 'O2C'
           slot-name: 'Production'
           package: .
-          
